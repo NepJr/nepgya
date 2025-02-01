@@ -13,7 +13,10 @@ public class JDADiscordMessageEvent extends ListenerAdapter
 		{
 			if(event.getChannel().getId().equals(BotConfig.botInfo.mcChannelId))
 			{
-				Nepgya.server.getPlayerList().sendMessage(new TextComponentString("[Discord " + event.getAuthor().getEffectiveName() + "] " + event.getMessage().getContentStripped()));
+				if(event.getAuthor().isBot() == false)
+				{
+					Nepgya.server.getPlayerList().sendMessage(new TextComponentString("[Discord " + event.getAuthor().getEffectiveName() + "] " + event.getMessage().getContentStripped()));
+				}
 			}
 		}
 	}
