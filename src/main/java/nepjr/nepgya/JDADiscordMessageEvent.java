@@ -3,6 +3,7 @@ package nepjr.nepgya;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
 public class JDADiscordMessageEvent extends ListenerAdapter
 {
@@ -15,7 +16,10 @@ public class JDADiscordMessageEvent extends ListenerAdapter
 			{
 				if(event.getAuthor().isBot() == false)
 				{
-					Nepgya.server.getPlayerList().sendMessage(new TextComponentString("[Discord " + event.getAuthor().getEffectiveName() + "] " + event.getMessage().getContentStripped()));
+					Nepgya.server.getPlayerList().sendMessage(new TextComponentString
+									(TextFormatting.WHITE + "[" + TextFormatting.DARK_AQUA + "Discord " +
+									 TextFormatting.WHITE + event.getAuthor().getEffectiveName() + "] " 
+									 + event.getMessage().getContentStripped()));
 				}
 			}
 		}

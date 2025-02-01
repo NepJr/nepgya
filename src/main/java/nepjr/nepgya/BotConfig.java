@@ -22,5 +22,9 @@ public class BotConfig
 		@Config.Name("Admins")
 		@Config.Comment("List the Admin's Discord IDs to allow them to use the RCON command")
 		public String[] admins = { "empty", "empty2" };
+		
+		@Config.Name("Server IP")
+		@Config.Comment("The server IP so the bot can display it")
+		public String serverIp = "127.0.0.1:25565";
 	}
 }
