@@ -1,12 +1,15 @@
 package nepjr.nepgya;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDA.Status;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -34,25 +37,33 @@ public class Nepgya {
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-		api = JDABuilder.createDefault(BotConfig.botInfo.botToken, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
-    			.addEventListeners(new JDAWhitelistCommand())
-    			.addEventListeners(new JDADiscordMessageEvent())
-    			.addEventListeners(new JDARConCommand())
-    			.addEventListeners(new JDAListCommand())
-    			.build();
-		
-    	api.updateCommands().addCommands(
-    			Commands.slash("whitelist", "Add yourself to the server's whitelist")
-    				.addOption(OptionType.STRING, "username", "Your Minecraft Username. Please only add your username and not others please!"),
-    			Commands.slash("rcon", "Send a command to the server. NOTE: You must have the required permissions to run this command!")
-    				.addOption(OptionType.STRING, "cmd", "The command to execute"),
-    			Commands.slash("list", "List currently online players")
-    				.setDefaultPermissions(DefaultMemberPermissions.ENABLED)
-    			).queue();
-    	
-    	api.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
-    	api.getPresence().setActivity(Activity.playing("Server is starting..."));
+		try 
+		{
+			api = JDABuilder.createDefault(BotConfig.botInfo.botToken, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
+	    			.addEventListeners(new JDAWhitelistCommand())
+	    			.addEventListeners(new JDADiscordMessageEvent())
+	    			.addEventListeners(new JDARConCommand())
+	    			.addEventListeners(new JDAListCommand())
+	    			.build();
+			
+			api.updateCommands().addCommands(
+        			Commands.slash("whitelist", "Add yourself to the server's whitelist")
+        				.addOption(OptionType.STRING, "username", "Your Minecraft Username. Please only add your username and not others please!"),
+        			Commands.slash("rcon", "Send a command to the server. NOTE: You must have the required permissions to run this command!")
+        				.addOption(OptionType.STRING, "cmd", "The command to execute"),
+        			Commands.slash("list", "List currently online players")
+        				.setDefaultPermissions(DefaultMemberPermissions.ENABLED)
+        			).queue();
+        	
+        	api.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
+        	api.getPresence().setActivity(Activity.playing("Server is starting..."));
+		} 
+		catch (InvalidTokenException e)
+		{
+			LOGGER.log(Level.ERROR, "Could not connect to Discord! Perhaps your bot token is invalid?");
+		}
     }
+    
     @EventHandler
     public void syncConfig(ConfigChangedEvent.OnConfigChangedEvent event)
     {
@@ -66,35 +77,45 @@ public class Nepgya {
     public void serverStarting(FMLServerStartingEvent event) 
     {
     	server = FMLCommonHandler.instance().getMinecraftServerInstance();
-    	if(BotConfig.botInfo.botToken == "empty")
+    	try
     	{
-    		event.getServer().sendMessage(new TextComponentString("You didn't fill out the bot token!"));
-    	}
-    	else
-    	{	
-        	api.getTextChannelById(BotConfig.botInfo.mcChannelId).sendMessage("Server is up! Hello Everyone!").queue();
-        	api.getPresence().setStatus(OnlineStatus.ONLINE);
-        	api.getPresence().setActivity(Activity.playing("Minecraft on " + BotConfig.botInfo.serverIp)
+    		api.getTextChannelById(BotConfig.botInfo.mcChannelId).sendMessage("Server is up! Hello Everyone!").queue();
+    		api.getPresence().setStatus(OnlineStatus.ONLINE);
+    		api.getPresence().setActivity(Activity.playing("Minecraft on " + BotConfig.botInfo.serverIp)
     				.withState("Players Online: " + Nepgya.server.getPlayerList().getCurrentPlayerCount() + " / " + Nepgya.server.getMaxPlayers()));
+    	}
+    	catch (NullPointerException e)
+    	{
+    		// why do I have to do this. If I don't do this it doesn't crash when starting or stopping the server if no token is provided
+    		// Perhaps I'm doing something wrong, or forge is very dumb. the apiEnabled boolean just straight up doesn't work here
     	}
     }
     
     @EventHandler
     public void serverStopping(FMLServerStoppingEvent event) 
     {
-    	if(BotConfig.botInfo.botToken != "empty")
+    	try
     	{
     		api.getTextChannelById(BotConfig.botInfo.mcChannelId).sendMessage("Server shutting down. Bye bye!").queue();
     		api.getPresence().setStatus(OnlineStatus.OFFLINE);
     	}
+    	catch (NullPointerException e)
+    	{
+    		// *sigh*
+    	}
     }
+    
     
     @EventHandler
     public void serverStopped(FMLServerStoppedEvent event) 
     {
-    	if(BotConfig.botInfo.botToken != "empty")
+    	try
     	{
     		api.shutdownNow();
+    	}
+    	catch (NullPointerException e)
+    	{
+    		// Again, why?
     	}
     }
 }
