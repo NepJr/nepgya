@@ -48,6 +48,7 @@ public class Nepgya {
 			
 			api.updateCommands().addCommands(
         			Commands.slash("whitelist", "Add yourself to the server's whitelist")
+						.setDefaultPermissions(DefaultMemberPermissions.ENABLED)
         				.addOption(OptionType.STRING, "username", "Your Minecraft Username. Please only add your username and not others please!"),
         			Commands.slash("rcon", "Send a command to the server. NOTE: You must have the required permissions to run this command!")
         				.addOption(OptionType.STRING, "cmd", "The command to execute"),
