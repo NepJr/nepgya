@@ -10,7 +10,7 @@ public class JDAListCommand extends ListenerAdapter
 	{
 		if(event.getName().equals("list"))
 		{
-			event.reply("Players Online: " + Nepgya.server.getPlayerList().getFormattedListOfPlayers(false)).setEphemeral(true).queue();
+			event.reply("Players Online: " + Nepgya.server.getConfigurationManager().func_152609_b(false)).setEphemeral(true).queue();
 		}
 	}
 }

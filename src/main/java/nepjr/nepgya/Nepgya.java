@@ -1,11 +1,21 @@
 package nepjr.nepgya;
 
+import java.io.File;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
+import cpw.mods.fml.common.event.FMLServerStoppedEvent;
+import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDA.Status;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -15,31 +25,44 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.common.config.Config.Type;
-import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
 
-@Mod(modid = BotTags.MODID, version = BotTags.VERSION, name = BotTags.MODNAME, acceptedMinecraftVersions = "[1.12.2]", serverSideOnly = true, acceptableRemoteVersions = "*")
+
+@Mod(modid = "nepgya", version = BotTags.VERSION, name = "nepgya", acceptedMinecraftVersions = "[1.7.10]", acceptableRemoteVersions = "*")
 public class Nepgya {
 
-    public static final Logger LOGGER = LogManager.getLogger(BotTags.MODID);
+    public static final Logger LOGGER = LogManager.getLogger("nepgya");
     public static JDA api;
+    public static Configuration config;
     public static MinecraftServer server;
+    
+    public static String cfgBotToken;
+    public static String[] cfgAdmins;
+    public static String cfgChannel;
+    public static String cfgIp;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
+    	File configFile = event.getSuggestedConfigurationFile();
+    	config = new Configuration(configFile);
+    	
+    	config.load();
+    	
+    	cfgBotToken = config.get(Configuration.CATEGORY_GENERAL, "botToken", "0", "Sets the bot token for the mod to use").getString();
+    	cfgAdmins = config.getStringList("admins", Configuration.CATEGORY_GENERAL, new String[] {"USER0", "USER1"}, "Set the Discord User ID of those you want to have access to the RCON command");
+    	cfgChannel = config.get(Configuration.CATEGORY_GENERAL, "channel", "0", "Sets the channel for the bot to send messages to").getString();
+    	cfgIp = config.get(Configuration.CATEGORY_GENERAL, "serverIp", "127.0.0.1:25565", "Sets the IP for the bot to display").getString();
+    	
+    	if(config.hasChanged())
+    	{
+    		config.save();
+    	}
+    	
 		try 
 		{
-			api = JDABuilder.createDefault(BotConfig.botInfo.botToken, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
+			api = JDABuilder.createDefault(cfgBotToken, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
 	    			.addEventListeners(new JDAWhitelistCommand())
 	    			.addEventListeners(new JDADiscordMessageEvent())
 	    			.addEventListeners(new JDARConCommand())
@@ -65,24 +88,31 @@ public class Nepgya {
     }
     
     @EventHandler
+    public void init(FMLInitializationEvent event)
+    {
+    	FMLCommonHandler.instance().bus().register(new MCEvents());
+    	MinecraftForge.EVENT_BUS.register(new MCEventsButTwo());
+    }
+    
+    @EventHandler
     public void syncConfig(ConfigChangedEvent.OnConfigChangedEvent event)
     {
-    	if(event.getModID().equals(BotTags.MODID))
+    	if(event.modID == "nepgya")
     	{
-    		ConfigManager.sync(BotTags.MODID, Type.INSTANCE);
+    		config.load();
     	}
     }
     
     @EventHandler
-    public void serverStarting(FMLServerStartingEvent event) 
+    public void serverStarting(FMLServerStartedEvent event) 
     {
     	server = FMLCommonHandler.instance().getMinecraftServerInstance();
     	try
     	{
-    		api.getTextChannelById(BotConfig.botInfo.mcChannelId).sendMessage("Server is up! Hello Everyone!").queue();
+    		api.getTextChannelById(cfgChannel).sendMessage("Server is up! Hello Everyone!").queue();
     		api.getPresence().setStatus(OnlineStatus.ONLINE);
-    		api.getPresence().setActivity(Activity.playing("Minecraft on " + BotConfig.botInfo.serverIp)
-    				.withState("Players Online: " + Nepgya.server.getPlayerList().getCurrentPlayerCount() + " / " + Nepgya.server.getMaxPlayers()));
+    		api.getPresence().setActivity(Activity.playing("Minecraft on " + cfgIp)
+    				.withState("Players Online: " + Nepgya.server.getCurrentPlayerCount() + " / " + Nepgya.server.getMaxPlayers()));
     	}
     	catch (NullPointerException e)
     	{
@@ -96,7 +126,7 @@ public class Nepgya {
     {
     	try
     	{
-    		api.getTextChannelById(BotConfig.botInfo.mcChannelId).sendMessage("Server shutting down. Bye bye!").queue();
+    		api.getTextChannelById(cfgChannel).sendMessage("Server shutting down. Bye bye!").queue();
     		api.getPresence().setStatus(OnlineStatus.OFFLINE);
     	}
     	catch (NullPointerException e)

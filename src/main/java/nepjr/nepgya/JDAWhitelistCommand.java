@@ -21,14 +21,14 @@ public class JDAWhitelistCommand extends ListenerAdapter
 			}
 			else
 			{
-				GameProfile gameprofile = Nepgya.server.getPlayerProfileCache().getGameProfileForUsername(event.getOption("username").getAsString());
+				//GameProfile gameprofile = Nepgya.server.getPlayerProfileCache().getGameProfileForUsername(event.getOption("username").getAsString());
+				GameProfile gameprofile = Nepgya.server.func_152358_ax().func_152655_a(event.getOption("username").getAsString());
 
 	            if (gameprofile == null)
 	            {
 	            	event.getHook().sendMessage("[ERROR] Invalid Username. Try again?").queue();
 	            }
-	            
-	            Nepgya.server.getPlayerList().addWhitelistedPlayer(gameprofile);
+	            Nepgya.server.getConfigurationManager().func_152601_d(gameprofile);
 	            Nepgya.LOGGER.log(Level.INFO, "Nepgya has added " + gameprofile.getName() + " to the whitelist!");
 	            event.getHook().sendMessage("Added to the server whitelist!").queue();
 			}

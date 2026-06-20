@@ -15,7 +15,7 @@ public class JDARConCommand extends ListenerAdapter
 		if(event.getName().equals("rcon"))
 		{
 			event.deferReply(true).queue();
-			if(ArrayUtils.contains(BotConfig.botInfo.admins, event.getUser().getId()))
+			if(ArrayUtils.contains(Nepgya.cfgAdmins, event.getUser().getId()))
 			{
 				if(Nepgya.server instanceof DedicatedServer)
 				{

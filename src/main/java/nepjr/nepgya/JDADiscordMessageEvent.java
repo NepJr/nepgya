@@ -2,8 +2,8 @@ package nepjr.nepgya;
 
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 
 public class JDADiscordMessageEvent extends ListenerAdapter
 {
@@ -12,13 +12,13 @@ public class JDADiscordMessageEvent extends ListenerAdapter
 	{
 		if(Nepgya.server.isServerRunning())
 		{
-			if(event.getChannel().getId().equals(BotConfig.botInfo.mcChannelId))
+			if(event.getChannel().getId().equals(Nepgya.cfgChannel))
 			{
 				if(event.getAuthor().isBot() == false)
 				{
-					Nepgya.server.getPlayerList().sendMessage(new TextComponentString
-									(TextFormatting.WHITE + "[" + TextFormatting.DARK_AQUA + "Discord " +
-									 TextFormatting.WHITE + event.getAuthor().getEffectiveName() + "] " 
+					Nepgya.server.getConfigurationManager().sendChatMsg(new ChatComponentText
+							(EnumChatFormatting.WHITE + "[" + EnumChatFormatting.DARK_AQUA + "Discord " +
+									EnumChatFormatting.WHITE + event.getAuthor().getEffectiveName() + "] " 
 									 + event.getMessage().getContentStripped()));
 				}
 			}
