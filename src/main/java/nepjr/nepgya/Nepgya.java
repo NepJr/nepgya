@@ -29,7 +29,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 
 
-@Mod(modid = "nepgya", version = BotTags.VERSION, name = "nepgya", acceptedMinecraftVersions = "[1.7.10]", acceptableRemoteVersions = "*")
+@Mod(modid = "nepgya", version = "1.1.2", name = "nepgya", acceptedMinecraftVersions = "[1.7.10]", acceptableRemoteVersions = "*")
 public class Nepgya {
 
     public static final Logger LOGGER = LogManager.getLogger("nepgya");
@@ -71,6 +71,7 @@ public class Nepgya {
 			
 			api.updateCommands().addCommands(
         			Commands.slash("whitelist", "Add yourself to the server's whitelist")
+						.setDefaultPermissions(DefaultMemberPermissions.ENABLED)
         				.addOption(OptionType.STRING, "username", "Your Minecraft Username. Please only add your username and not others please!"),
         			Commands.slash("rcon", "Send a command to the server. NOTE: You must have the required permissions to run this command!")
         				.addOption(OptionType.STRING, "cmd", "The command to execute"),
