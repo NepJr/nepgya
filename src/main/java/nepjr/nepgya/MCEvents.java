@@ -22,6 +22,8 @@ public class MCEvents
     		Nepgya.api.getTextChannelById(BotConfig.botInfo.mcChannelId)
 			.sendMessage("[" + event.getUsername() + "] " + event.getMessage()).queue();
     	}
+    	if (Nepgya.api.getStatus() != Status.CONNECTED)
+    	{}
     }
     
     @SubscribeEvent
@@ -36,6 +38,8 @@ public class MCEvents
         	Nepgya.api.getPresence().setActivity(Activity.playing("Minecraft on " + BotConfig.botInfo.serverIp)
     				.withState("Players Online: " + (Nepgya.server.getPlayerList().getCurrentPlayerCount() - 1) + " / " + Nepgya.server.getMaxPlayers()));
     	}
+    	if (Nepgya.api.getStatus() != Status.CONNECTED)
+    	{}
     }
     
     @SubscribeEvent
@@ -48,6 +52,8 @@ public class MCEvents
         	Nepgya.api.getPresence().setActivity(Activity.playing("Minecraft on " + BotConfig.botInfo.serverIp)
     				.withState("Players Online: " + Nepgya.server.getPlayerList().getCurrentPlayerCount() + " / " + Nepgya.server.getMaxPlayers()));
     	}
+    	if (Nepgya.api.getStatus() != Status.CONNECTED)
+    	{}
     }
     
     @SubscribeEvent
@@ -62,5 +68,7 @@ public class MCEvents
         		Nepgya.api.getTextChannelById(BotConfig.botInfo.mcChannelId).sendMessage(((EntityPlayerMP) entity).getGameProfile().getName() + " died! Rip Bozo!").queue();
         	}
     	}
+    	if (Nepgya.api.getStatus() != Status.CONNECTED)
+    	{}
     }
 }
